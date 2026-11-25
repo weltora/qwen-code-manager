@@ -1,0 +1,424 @@
+<Page
+    x:Class="QwenCodeManager.App.Views.ProjectsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:QwenCodeManager.App.ViewModels"
+    Background="{StaticResource BgDeepBrush}"
+    RequestedTheme="Dark">
+
+    <Grid Margin="20,14,20,10" ColumnSpacing="18">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="330" MinWidth="280" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ============ LEFT: project list ============ -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <TextBlock Text="Проекты" FontSize="22" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}" />
+                    <Border Style="{StaticResource PillBorderStyle}" Background="{StaticResource BgElevatedBrush}" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind ViewModel.Projects.Count, Mode=OneWay}" FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Border>
+                </StackPanel>
+                <Button HorizontalAlignment="Right" Style="{StaticResource SubtleButtonStyle}" Padding="12,6"
+                        Command="{x:Bind ViewModel.AddProjectCommand}"
+                        ToolTipService.ToolTip="Добавить папку проекта" AutomationProperties.Name="Добавить проект">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xE710;" FontSize="11" />
+                        <TextBlock Text="Добавить" FontSize="13" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <TextBox Grid.Row="1" PlaceholderText="Поиск проекта..." Margin="0,0,0,8"
+                     Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     AutomationProperties.Name="Поиск проектов" />
+
+            <Grid Grid.Row="2" ColumnSpacing="8" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ComboBox Grid.Column="0" HorizontalAlignment="Stretch" FontSize="12"
+                          ItemsSource="{x:Bind ViewModel.SortOptions}"
+                          SelectedItem="{x:Bind ViewModel.SortMode, Mode=TwoWay}"
+                          AutomationProperties.Name="Сортировка" ToolTipService.ToolTip="Сортировка" />
+                <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" FontSize="12"
+                          ItemsSource="{x:Bind ViewModel.FilterOptions}"
+                          SelectedItem="{x:Bind ViewModel.FilterType, Mode=TwoWay}"
+                          AutomationProperties.Name="Фильтр по типу" ToolTipService.ToolTip="Фильтр по типу" />
+            </Grid>
+
+            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="10">
+                    <ListView x:Name="ProjectList" ItemsSource="{x:Bind ViewModel.Projects, Mode=OneWay}"
+                              SelectedItem="{x:Bind ViewModel.SelectedProject, Mode=TwoWay}"
+                              SelectionMode="Single" Background="Transparent">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0,0,0,2" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListViewItem">
+                                            <ContentPresenter Content="{TemplateBinding Content}"
+                                                              ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ProjectViewModel">
+                                <Border x:Name="CardRoot" Style="{StaticResource CardBorderStyle}" Padding="12" Margin="0,2">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="SelectionStates">
+                                            <VisualState x:Name="Unselected" />
+                                            <VisualState x:Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Target="CardRoot.BorderBrush" Value="{StaticResource SelectedBorderBrush}" />
+                                                    <Setter Target="CardRoot.BorderThickness" Value="1.5" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="44" Height="44" CornerRadius="10"
+                                                Background="{StaticResource BgElevatedBrush}" VerticalAlignment="Center">
+                                            <FontIcon Glyph="{x:Bind TypeIconGlyph, Mode=OneWay}" FontSize="19"
+                                                      Foreground="{StaticResource AmberAccentBrush}" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{x:Bind Path, Mode=OneWay}" FontSize="11"
+                                                       Foreground="{StaticResource TextTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                                                       TextTrimming="CharacterEllipsis">
+                                                <Run Text="Последняя сессия: " /><Run Text="{x:Bind LastSessionText, Mode=OneWay}" /></TextBlock>
+                                        </StackPanel>
+                                        <Ellipse Grid.Column="2" Width="9" Height="9" VerticalAlignment="Top" Margin="0,4,0,0"
+                                                 Fill="{x:Bind StatusBrush, Mode=OneWay}"
+                                                 ToolTipService.ToolTip="{x:Bind StatusText, Mode=OneWay}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <!-- New project tile -->
+                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                            Background="Transparent" BorderThickness="0" Padding="0"
+                            Command="{x:Bind ViewModel.AddProjectCommand}" AutomationProperties.Name="Новый проект">
+                        <Border CornerRadius="14" BorderBrush="{StaticResource StrokeSoftBrush}" BorderThickness="1"
+                                Background="Transparent" Padding="12" HorizontalAlignment="Stretch">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Border Width="44" Height="44" CornerRadius="10" Background="{StaticResource BgCardBrush}">
+                                    <FontIcon Glyph="&#xE710;" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </Border>
+                                <StackPanel Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="Новый проект" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Text="Добавить папку с проектом" FontSize="11"
+                                               Foreground="{StaticResource TextTertiaryBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+
+            <ProgressRing Grid.Row="3" IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" Width="36" Height="36"
+                          HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
+
+        <!-- ============ RIGHT: detail panel ============ -->
+        <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}"
+                Visibility="{x:Bind ViewModel.HasSelection, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="18,16">
+                <StackPanel Spacing="14">
+
+                    <!-- Header -->
+                    <Border CornerRadius="12" Background="{StaticResource BgElevatedBrush}" Height="120">
+                        <Grid>
+                            <Image Source="{x:Bind ViewModel.Detail.Cover, Mode=OneWay}" Stretch="UniformToFill" Opacity="0.45" />
+                            <Grid Padding="16" ColumnSpacing="14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Width="64" Height="64" CornerRadius="14"
+                                        Background="{StaticResource BgCardBrush}" VerticalAlignment="Center"
+                                        BorderBrush="{StaticResource StrokeSoftBrush}" BorderThickness="1">
+                                    <FontIcon Glyph="{x:Bind ViewModel.Detail.TypeIconGlyph, Mode=OneWay}" FontSize="28"
+                                              Foreground="{StaticResource TextPrimaryBrush}" />
+                                </Border>
+                                <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                                    <TextBlock Text="{x:Bind ViewModel.Detail.Name, Mode=OneWay}" FontSize="24" FontWeight="Bold"
+                                               Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon Glyph="&#xE8B7;" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        <TextBlock Text="{x:Bind ViewModel.Detail.Path, Mode=OneWay}" FontSize="12"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                    <TextBlock Text="{x:Bind ViewModel.Detail.Description, Mode=OneWay}" FontSize="12"
+                                               Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top">
+                                    <Button Style="{StaticResource SubtleButtonStyle}" Padding="8"
+                                            Click="EditSelected_Click" ToolTipService.ToolTip="Изменить проект">
+                                        <FontIcon Glyph="&#xE70F;" FontSize="14" />
+                                    </Button>
+                                    <Button Style="{StaticResource SubtleButtonStyle}" Padding="8"
+                                            Click="OpenFolderSelected_Click" ToolTipService.ToolTip="Открыть папку">
+                                        <FontIcon Glyph="&#xE8B7;" FontSize="14" />
+                                    </Button>
+                                    <Button Style="{StaticResource SubtleButtonStyle}" Padding="8"
+                                            ToolTipService.ToolTip="Меню проекта" AutomationProperties.Name="Меню проекта">
+                                        <FontIcon Glyph="&#xE712;" FontSize="14" />
+                                        <Button.Flyout>
+                                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                <MenuFlyoutItem Text="Открыть папку" Click="OpenFolderSelected_Click" />
+                                                <MenuFlyoutItem Text="Открыть терминал" Click="OpenTerminalSelected_Click" />
+                                                <MenuFlyoutItem Text="Открыть GitHub" Click="OpenGitHubSelected_Click" />
+                                                <MenuFlyoutItem Text="Checkpoint" Click="CheckpointSelected_Click" />
+                                                <MenuFlyoutSeparator />
+                                                <MenuFlyoutItem Text="Открыть QWEN.md" Click="QwenMdSelected_Click" />
+                                                <MenuFlyoutItem Text="Папка Skills" Click="SkillsSelected_Click" />
+                                                <MenuFlyoutSeparator />
+                                                <MenuFlyoutItem Text="Обновить" Click="RefreshSelected_Click" />
+                                                <MenuFlyoutItem Text="Изменить проект" Click="EditSelected_Click" />
+                                                <MenuFlyoutItem Text="Убрать из менеджера" Click="RemoveSelected_Click" />
+                                            </MenuFlyout>
+                                        </Button.Flyout>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Stat cards -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Style="{StaticResource StatCardStyle}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE823;" FontSize="17" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="Последний запуск" FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.Detail.LastLaunchText, Mode=OneWay}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource StatCardStyle}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE916;" FontSize="17" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="Длительность" FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.Detail.DurationText, Mode=OneWay}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Style="{StaticResource StatCardStyle}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE81E;" FontSize="17" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="Статус" FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Ellipse Width="8" Height="8" Fill="{x:Bind ViewModel.Detail.SessionStateBrush, Mode=OneWay}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{x:Bind ViewModel.Detail.SessionStateText, Mode=OneWay}" FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="{x:Bind ViewModel.Detail.SessionStateBrush, Mode=OneWay}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="3" Style="{StaticResource StatCardStyle}">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE964;" FontSize="17" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="Память Qwen" FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.Detail.MemoryText, Mode=OneWay}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource OkGreenBrush}" />
+                                    <TextBlock Text="{x:Bind ViewModel.Detail.MemoryUpdatedText, Mode=OneWay}" FontSize="10"
+                                               Foreground="{StaticResource TextTertiaryBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Continue banner -->
+                    <Border CornerRadius="12" BorderBrush="{StaticResource AmberAccentBrush}" BorderThickness="1"
+                            Background="{StaticResource AmberSoftBrush}" Padding="14,12"
+                            Visibility="{x:Bind ViewModel.Detail.HasContinueBanner, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Width="38" Height="38" CornerRadius="9" Background="{StaticResource BgElevatedBrush}">
+                                <FontIcon Glyph="&#xE8BD;" FontSize="16" Foreground="{StaticResource AmberAccentBrush}" />
+                            </Border>
+                            <StackPanel Spacing="2" VerticalAlignment="Center">
+                                <TextBlock Text="Найдена сессия для продолжения" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="{x:Bind ViewModel.Detail.ContinueBannerText, Mode=OneWay}" FontSize="12"
+                                           Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="640" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Action buttons -->
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.2*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                Background="{StaticResource TealGradientBrush}" CornerRadius="10" Padding="16,12" BorderThickness="0"
+                                Click="ContinueSelected_Click" IsEnabled="{x:Bind ViewModel.Detail.CanContinue, Mode=OneWay}"
+                                ToolTipService.ToolTip="Продолжить последнюю сессию Qwen" AutomationProperties.Name="Продолжить сессию">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <FontIcon Glyph="&#xE768;" FontSize="18" Foreground="#FF0C1214" />
+                                <StackPanel Spacing="1">
+                                    <TextBlock Text="Продолжить сессию" FontSize="14" FontWeight="SemiBold" Foreground="#FF0C1214" />
+                                    <TextBlock Text="qwen --continue" FontSize="11" Foreground="#B30C1214" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                Style="{StaticResource SubtleButtonStyle}" Padding="16,12"
+                                Click="NewSessionSelected_Click" ToolTipService.ToolTip="Новая сессия Qwen в папке проекта"
+                                AutomationProperties.Name="Новая сессия">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <FontIcon Glyph="&#xE710;" FontSize="18" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <StackPanel Spacing="1">
+                                    <TextBlock Text="Новая сессия" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Text="qwen" FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                Style="{StaticResource SubtleButtonStyle}" Padding="16,12"
+                                Click="OpenTerminalSelected_Click" ToolTipService.ToolTip="Открыть терминал в папке проекта"
+                                AutomationProperties.Name="Открыть терминал">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <FontIcon Glyph="&#xE756;" FontSize="18" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <StackPanel Spacing="1">
+                                    <TextBlock Text="Открыть терминал" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Text="в папке проекта" FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <InfoBar IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}" Severity="Error"
+                             Title="Ошибка" Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+
+                    <!-- Session history -->
+                    <Border Style="{StaticResource CardBorderStyle}" Padding="16,12">
+                        <StackPanel Spacing="10">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock Text="История сессий" FontSize="16" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <Border Style="{StaticResource PillBorderStyle}" Background="{StaticResource BgElevatedBrush}">
+                                        <TextBlock Text="{x:Bind ViewModel.Detail.SessionCount, Mode=OneWay}" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </Border>
+                                </StackPanel>
+                                <Button HorizontalAlignment="Right" Content="Показать все" Style="{StaticResource SubtleButtonStyle}"
+                                        Padding="12,5" FontSize="12" Click="ShowAllSessions_Click" />
+                            </Grid>
+
+                            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Detail.Sessions, Mode=OneWay}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Spacing="4" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SessionRowViewModel">
+                                        <Grid ColumnSpacing="12" Padding="4,7">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="130" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="80" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button Grid.Column="0" Background="Transparent" BorderThickness="0" Padding="4"
+                                                    Command="{x:Bind ContinueCommand}" IsEnabled="{x:Bind CanResume}"
+                                                    ToolTipService.ToolTip="Продолжить эту сессию (qwen --resume)">
+                                                <FontIcon Glyph="&#xE768;" FontSize="13"
+                                                          Foreground="{x:Bind StatusBrush}" />
+                                            </Button>
+                                            <TextBlock Grid.Column="1" Text="{x:Bind DateText}" FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Grid.Column="2" Text="{x:Bind ActivityText}" FontSize="12" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                            <Border Grid.Column="3" Style="{StaticResource PillBorderStyle}" Background="{x:Bind PillBackground}">
+                                                <TextBlock Text="{x:Bind StatusText}" FontSize="11" Foreground="{x:Bind StatusBrush}" />
+                                            </Border>
+                                            <TextBlock Grid.Column="4" Text="{x:Bind DurationText}" FontSize="11" VerticalAlignment="Center"
+                                                       Foreground="{StaticResource TextTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                                            <Button Grid.Column="5" Background="Transparent" BorderThickness="0" Padding="4"
+                                                    ToolTipService.ToolTip="Действия с сессией">
+                                                <FontIcon Glyph="&#xE712;" FontSize="12" Foreground="{StaticResource TextTertiaryBrush}" />
+                                                <Button.Flyout>
+                                                    <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                        <MenuFlyoutItem Text="Продолжить" Command="{x:Bind ContinueCommand}" />
+                                                        <MenuFlyoutItem Text="Открыть проект" Command="{x:Bind OpenProjectCommand}" />
+                                                        <MenuFlyoutItem Text="Метаданные" Command="{x:Bind ViewMetadataCommand}" />
+                                                    </MenuFlyout>
+                                                </Button.Flyout>
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Git summary -->
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="2,0,0,6">
+                        <FontIcon Glyph="&#xE8AD;" FontSize="13" Foreground="{StaticResource TextTertiaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.Detail.GitSummary, Mode=OneWay}" FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Empty state -->
+        <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12"
+                    Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <FontIcon Glyph="&#xE8B7;" FontSize="40" Foreground="{StaticResource TextTertiaryBrush}" HorizontalAlignment="Center" />
+            <TextBlock Text="Пока нет проектов" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center"
+                       Foreground="{StaticResource TextPrimaryBrush}" />
+            <TextBlock Text="Добавьте папку проекта, чтобы начать." FontSize="13" HorizontalAlignment="Center"
+                       Foreground="{StaticResource TextSecondaryBrush}" />
+            <Button Style="{StaticResource TealButtonStyle}" HorizontalAlignment="Center"
+                    Content="+ Добавить проект" Command="{x:Bind ViewModel.AddProjectCommand}" />
+        </StackPanel>
+    </Grid>
+</Page>

@@ -1,0 +1,92 @@
+<Page
+    x:Class="QwenCodeManager.App.Views.SessionsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:QwenCodeManager.App.ViewModels"
+    Background="{StaticResource BgDeepBrush}"
+    RequestedTheme="Dark">
+
+    <Grid Margin="24,16,24,12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="Сессии" FontSize="24" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextPrimaryBrush}" />
+                <Button Content="Обновить" Style="{StaticResource SubtleButtonStyle}"
+                        Command="{x:Bind ViewModel.LoadCommand}" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+            </StackPanel>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Rows, Mode=OneWay}">
+                <ItemsRepeater.Layout>
+                    <StackLayout Spacing="8" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SessionRowViewModel">
+                        <Border Style="{StaticResource CardBorderStyle}" Padding="16,10">
+                            <Grid ColumnSpacing="14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="90" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button Grid.Column="0" Background="Transparent" BorderThickness="0" Padding="4"
+                                        Command="{x:Bind ContinueCommand}" IsEnabled="{x:Bind CanResume}"
+                                        ToolTipService.ToolTip="Продолжить эту сессию (qwen --resume)">
+                                    <FontIcon Glyph="&#xE768;" FontSize="14" Foreground="{x:Bind StatusBrush}" />
+                                </Button>
+
+                                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                    <TextBlock Text="{x:Bind ProjectName}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{x:Bind DateText}" FontSize="11" Foreground="{StaticResource TextTertiaryBrush}" />
+                                </StackPanel>
+
+                                <TextBlock Grid.Column="2" Text="{x:Bind ActivityText}" FontSize="12" VerticalAlignment="Center"
+                                           Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis"
+                                           ToolTipService.ToolTip="{x:Bind ActivityText}" />
+
+                                <Border Grid.Column="3" Style="{StaticResource PillBorderStyle}" Background="{x:Bind PillBackground}">
+                                    <TextBlock Text="{x:Bind StatusText}" FontSize="11" Foreground="{x:Bind StatusBrush}" />
+                                </Border>
+
+                                <TextBlock Grid.Column="4" Text="{x:Bind DurationText}" FontSize="11" VerticalAlignment="Center"
+                                           Foreground="{StaticResource TextTertiaryBrush}" />
+
+                                <Button Grid.Column="5" Background="Transparent" BorderThickness="0" Padding="6"
+                                        ToolTipService.ToolTip="Действия с сессией">
+                                    <FontIcon Glyph="&#xE712;" FontSize="13" Foreground="{StaticResource TextTertiaryBrush}" />
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                            <MenuFlyoutItem Text="Продолжить" Command="{x:Bind ContinueCommand}" />
+                                            <MenuFlyoutItem Text="Открыть проект" Command="{x:Bind OpenProjectCommand}" />
+                                            <MenuFlyoutItem Text="Метаданные" Command="{x:Bind ViewMetadataCommand}" />
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10"
+                    Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <FontIcon Glyph="&#xE823;" FontSize="36" Foreground="{StaticResource TextTertiaryBrush}" HorizontalAlignment="Center" />
+            <TextBlock Text="Сессии не найдены" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Сессии появятся здесь после запуска Qwen Code в ваших проектах."
+                       FontSize="12" Foreground="{StaticResource TextTertiaryBrush}" HorizontalAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</Page>

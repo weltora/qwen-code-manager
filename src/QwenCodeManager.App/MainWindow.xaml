@@ -1,0 +1,143 @@
+<Window
+    x:Class="QwenCodeManager.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid x:Name="RootGrid" Background="{StaticResource BgDeepBrush}" RequestedTheme="Dark">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="64" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="40" />
+        </Grid.RowDefinitions>
+
+        <!-- Title bar: logo + app name + subtitle -->
+        <Grid x:Name="AppTitleBar" Grid.Row="0">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FF14181C" Offset="0" />
+                    <GradientStop Color="#FF17222A" Offset="0.55" />
+                    <GradientStop Color="#FF24231C" Offset="1" />
+                </LinearGradientBrush>
+            </Grid.Background>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0" Spacing="12">
+                <Border Width="34" Height="34" CornerRadius="9" Background="{StaticResource TealGradientBrush}">
+                    <FontIcon Glyph="&#xEC7A;" FontSize="17" Foreground="#FF0C1214" />
+                </Border>
+                <StackPanel Spacing="0" VerticalAlignment="Center">
+                    <TextBlock Text="Qwen Code Manager" FontSize="17" FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}" />
+                    <TextBlock Text="Лаунчер и менеджер проектов для Qwen Code" FontSize="11"
+                               Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <!-- Body: sidebar + content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="210" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource BgSurfaceBrush}"
+                    BorderBrush="{StaticResource StrokeSoftBrush}" BorderThickness="0,0,1,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="12,10" Spacing="4">
+                        <RadioButton x:Name="NavProjects" Style="{StaticResource NavButtonStyle}"
+                                     Tag="Projects" Checked="Nav_Checked" AutomationProperties.Name="Проекты">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE80F;" FontSize="15" />
+                                <TextBlock Text="Проекты" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavSessions" Style="{StaticResource NavButtonStyle}"
+                                     Tag="Sessions" Checked="Nav_Checked" AutomationProperties.Name="Сессии">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE823;" FontSize="15" />
+                                <TextBlock Text="Сессии" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavMemory" Style="{StaticResource NavButtonStyle}"
+                                     Tag="Memory" Checked="Nav_Checked" AutomationProperties.Name="Память">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE81E;" FontSize="15" />
+                                <TextBlock Text="Память" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavSettings" Style="{StaticResource NavButtonStyle}"
+                                     Tag="Settings" Checked="Nav_Checked" AutomationProperties.Name="Настройки">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE713;" FontSize="15" />
+                                <TextBlock Text="Настройки" />
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="NavAbout" Style="{StaticResource NavButtonStyle}"
+                                     Tag="About" Checked="Nav_Checked" AutomationProperties.Name="О программе">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE946;" FontSize="15" />
+                                <TextBlock Text="О программе" />
+                            </StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+
+                    <!-- Qwen status card -->
+                    <StackPanel Grid.Row="1" Margin="12,0,12,14" Spacing="8">
+                        <Border Style="{StaticResource CardBorderStyle}" Padding="12,10">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <FontIcon Glyph="&#xE945;" FontSize="20" Foreground="{StaticResource AmberAccentBrush}" VerticalAlignment="Center" />
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="Qwen Code" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                                                 Fill="{x:Bind QwenDotBrush(Shell.QwenFound), Mode=OneWay}" />
+                                        <TextBlock Text="{x:Bind QwenReadyText(Shell.QwenFound), Mode=OneWay}" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="{x:Bind Shell.QwenVersionText, Mode=OneWay}" FontSize="11" Margin="4,0,0,0"
+                                   Foreground="{StaticResource TextTertiaryBrush}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Frame x:Name="ContentFrame" Grid.Column="1" />
+        </Grid>
+
+        <!-- Bottom status bar -->
+        <Border Grid.Row="2" Background="{StaticResource BgSurfaceBrush}"
+                BorderBrush="{StaticResource StrokeSoftBrush}" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" Margin="18,0" Spacing="0" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                    <FontIcon Glyph="&#xE756;" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="Qwen Code:" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind Shell.QwenStatusText, Mode=OneWay}" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{x:Bind QwenDotBrush(Shell.QwenFound), Mode=OneWay}" />
+                </StackPanel>
+                <Border Width="1" Height="16" Background="{StaticResource StrokeSoftBrush}" Margin="16,0" />
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                    <FontIcon Glyph="&#xE964;" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="Сессии:" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind Shell.TotalSessions, Mode=OneWay}" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextPrimaryBrush}" />
+                </StackPanel>
+                <Border Width="1" Height="16" Background="{StaticResource StrokeSoftBrush}" Margin="16,0" />
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                    <FontIcon Glyph="&#xE81E;" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="Память:" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind Shell.MemoryStatusText, Mode=OneWay}" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{x:Bind MemoryBrush(Shell.MemoryAvailable), Mode=OneWay}" />
+                </StackPanel>
+                <Border Width="1" Height="16" Background="{StaticResource StrokeSoftBrush}" Margin="16,0" />
+                <TextBlock Text="Офлайн · только чтение проектов" FontSize="11"
+                           Foreground="{StaticResource TextTertiaryBrush}" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
