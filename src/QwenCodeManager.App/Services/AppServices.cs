@@ -23,7 +23,8 @@ public sealed class AppServices
 
     public static AppServices Create()
     {
-        var paths = new AppPaths();
+        // QCM_DATA_DIR isolates all manager storage (used for demos/screenshots/CI); unset in normal runs.
+        var paths = new AppPaths(localAppDataOverride: Environment.GetEnvironmentVariable("QCM_DATA_DIR"));
         paths.EnsureCreated();
         var logger = new FileLogger(paths);
         var runner = new ProcessRunner(logger);
