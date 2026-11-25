@@ -52,18 +52,66 @@ public sealed class AppPaths
 
     /// <summary>
     /// Converts an absolute project path to the folder name Qwen Code uses under
-    /// %QWEN_HOME%\projects (e.g. C:\Users\X\Y -&gt; c--users-x-y).
-    /// Verified against real folders of Qwen Code 0.28.x.
+    /// %QWEN_HOME%\projects. Rule verified against all real folders of Qwen 0.28.x:
+    /// lowercase, every character outside a-z0-9 becomes '-' (including '_', '.',
+    /// spaces); dashes are NOT collapsed (" - " -> "---").
     /// </summary>
     public static string ToQwenProjectSlug(string absolutePath)
     {
         var normalized = absolutePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         var chars = normalized.ToLowerInvariant()
-            .Select(c => c is ':' or '\\' or '/' ? '-' : c)
+            .Select(c => c is >= 'a' and <= 'z' or >= '0' and <= '9' ? c : '-')
             .ToArray();
         return new string(chars);
     }
 
     public string QwenChatsDirFor(string projectPath) =>
         Path.Combine(QwenProjectsDir, ToQwenProjectSlug(projectPath), "chats");
+
+    /// <summary>
+    /// Resolves the chats directory, falling back to a scan of runtime.json work_dir
+    /// values when the computed slug folder does not exist (robust to slug-rule changes).
+    /// </summary>
+    public string ResolveChatsDir(string projectPath, Func<string, string?> readWorkDir)
+    {
+        var direct = QwenChatsDirFor(projectPath);
+        if (Directory.Exists(direct))
+        {
+            return direct;
+        }
+
+        if (!Directory.Exists(QwenProjectsDir))
+        {
+            return direct;
+        }
+
+        var target = projectPath.TrimEnd('\\', '/');
+        try
+        {
+            foreach (var projectDir in Directory.EnumerateDirectories(QwenProjectsDir))
+            {
+                var chats = Path.Combine(projectDir, "chats");
+                if (!Directory.Exists(chats))
+                {
+                    continue;
+                }
+
+                foreach (var runtimeFile in Directory.EnumerateFiles(chats, "*.runtime.json"))
+                {
+                    var workDir = readWorkDir(runtimeFile);
+                    if (workDir is not null
+                        && string.Equals(workDir.TrimEnd('\\', '/'), target, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return chats;
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Fallback must never break the primary path.
+        }
+
+        return direct;
+    }
 }

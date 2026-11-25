@@ -25,7 +25,7 @@ public sealed class SessionService(AppPaths paths, ILogger logger)
     /// <summary>All sessions for the project, newest activity first.</summary>
     public List<QwenSession> ListSessions(string projectPath)
     {
-        var chatsDir = paths.QwenChatsDirFor(projectPath);
+        var chatsDir = paths.ResolveChatsDir(projectPath, GetRuntimeWorkDir);
         var result = new List<QwenSession>();
         if (!Directory.Exists(chatsDir))
         {
@@ -62,6 +62,25 @@ public sealed class SessionService(AppPaths paths, ILogger logger)
         return result
             .OrderByDescending(s => s.LastActivityUtc ?? s.StartedAtUtc ?? DateTime.MinValue)
             .ToList();
+    }
+
+    /// <summary>Resolved chats directory for a project (slug rule + work_dir fallback).</summary>
+    public string ResolveChatsDir(string projectPath) =>
+        paths.ResolveChatsDir(projectPath, GetRuntimeWorkDir);
+
+    /// <summary>Reads just work_dir from a runtime.json for the slug fallback; silent on errors.</summary>
+    private static string? GetRuntimeWorkDir(string runtimeFile)
+    {
+        try
+        {
+            using var stream = File.Open(runtimeFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            var runtime = JsonSerializer.Deserialize<RuntimeInfo>(stream, Json.Options);
+            return runtime?.WorkDir;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private QwenSession? ReadSession(string chatsDir, string runtimeFile, string projectPath)

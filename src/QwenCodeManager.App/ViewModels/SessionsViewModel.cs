@@ -119,7 +119,7 @@ public partial class SessionRowViewModel : ObservableObject
     [RelayCommand]
     private void ViewMetadata()
     {
-        var chats = _services.Paths.QwenChatsDirFor(_project.Path);
+        var chats = _services.Sessions.ResolveChatsDir(_project.Path);
         var runtime = Path.Combine(chats, _session.SessionId + ".runtime.json");
         if (File.Exists(runtime))
         {

@@ -36,9 +36,77 @@ public class AppPathsTests
     [InlineData(@"C:\Users\WELTORA\Desktop\QwenCodeManager", "c--users-weltora-desktop-qwencodemanager")]
     [InlineData(@"C:\Users\WELTORA\Desktop\NoveLA-default", "c--users-weltora-desktop-novela-default")]
     [InlineData(@"D:\Projects\Cyberpunk\", "d--projects-cyberpunk")]
+    // Real-world cases verified against Qwen 0.28.x storage: '_' and '.' also become '-'
+    [InlineData(@"C:\Users\WELTORA\Desktop\Blackwall_Unleashed_0.2.2_RAM_RU", "c--users-weltora-desktop-blackwall-unleashed-0-2-2-ram-ru")]
+    // Spaces become '-', consecutive dashes are NOT collapsed (" - " -> "---")
+    [InlineData(@"C:\Users\X\Desktop\Blackwall Unleashed - Canto Mk.6 39002 0.2.2", "c--users-x-desktop-blackwall-unleashed---canto-mk-6-39002-0-2-2")]
     public void SlugMatchesRealQwenLayout(string path, string expected)
     {
         Assert.Equal(expected, AppPaths.ToQwenProjectSlug(path));
+    }
+
+    [Fact]
+    public void ResolveChatsDirFallsBackToWorkDirScan()
+    {
+        using var temp = new TempRoot();
+        var project = temp.NewDir("Some_Weird.Name v2");
+        // Simulate a Qwen layout whose slug does not match our computed rule.
+        var oddChats = Path.Combine(temp.Paths.QwenProjectsDir, "totally-different-slug", "chats");
+        Directory.CreateDirectory(oddChats);
+        var id = Guid.NewGuid().ToString();
+        File.WriteAllText(
+            Path.Combine(oddChats, id + ".runtime.json"),
+            System.Text.Json.JsonSerializer.Serialize(new { work_dir = project, started_at = 1795500000.0, qwen_version = "0.28.4" }));
+
+        var service = new SessionService(temp.Paths, NullLogger.Instance);
+        var summary = service.GetSummary(project);
+
+        Assert.Equal(1, summary.Total);
+        Assert.Equal(oddChats, service.ResolveChatsDir(project));
+    }
+
+    [Fact]
+    public void SlugRuleMatchesEveryRealQwenProjectFolder()
+    {
+        // Real-data smoke test: verifies the rule against actual QWEN_HOME storage when present.
+        var qwenHome = Environment.GetEnvironmentVariable("QWEN_HOME");
+        var projectsDir = qwenHome is null ? null : Path.Combine(qwenHome, "projects");
+        if (projectsDir is null || !Directory.Exists(projectsDir))
+        {
+            return; // no Qwen installation on this machine
+        }
+
+        var failures = new List<string>();
+        foreach (var projectDir in Directory.EnumerateDirectories(projectsDir))
+        {
+            var chats = Path.Combine(projectDir, "chats");
+            if (!Directory.Exists(chats))
+            {
+                continue;
+            }
+
+            var runtime = Directory.EnumerateFiles(chats, "*.runtime.json").FirstOrDefault();
+            if (runtime is null)
+            {
+                continue;
+            }
+
+            using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(runtime));
+            if (!doc.RootElement.TryGetProperty("work_dir", out var wdEl))
+            {
+                continue;
+            }
+
+            var workDir = wdEl.GetString()!;
+            var expected = Path.GetFileName(projectDir);
+            var computed = AppPaths.ToQwenProjectSlug(workDir);
+            if (computed != expected)
+            {
+                failures.Add($"{workDir}: expected '{expected}', computed '{computed}'");
+            }
+        }
+
+        Assert.True(failures.Count == 0, string.Join("\n", failures));
     }
 
     [Fact]

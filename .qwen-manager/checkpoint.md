@@ -7,7 +7,15 @@ Last updated:
 2026-11-25
 
 Current task:
-Windows installer готов: Inno Setup 6, QwenCodeManager-Setup-x64.exe в artifacts\installer.
+Фикс обнаружения сессий: slug Qwen заменяет ВСЕ не-буквенно-цифровые символы на '-' (включая '_' и '.'), выпущен 1.0.1.
+
+Completed:
+- Root cause: ToQwenProjectSlug заменял только : \ /, а Qwen — все символы вне a-z0-9 (Blackwall_Unleashed_0.2.2_RAM_RU → blackwall-unleashed-0-2-2-ram-ru)
+- Исправлен AppPaths.ToQwenProjectSlug + fallback ResolveChatsDir (скан runtime.json work_dir при несовпадении slug)
+- SessionService и SessionsViewModel используют ResolveChatsDir
+- Тесты: 55/55, включая real-data smoke test по всем папкам QWEN_HOME и fallback-тест
+- Версия 1.0.1, installer собран (SHA256 60bfb7aa...), установлен поверх 1.0.0 (D:\Qwen Code Manager), user data цела
+- Проверено визуально: Blackwall теперь показывает «Последняя сессия: Сегодня, 18:33»
 
 Completed:
 - Master-detail layout: список проектов слева (иконка типа, имя, путь, последняя сессия, статус-точка, amber-выделение), детальная панель справа

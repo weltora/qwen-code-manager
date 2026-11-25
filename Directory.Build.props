@@ -1,9 +1,9 @@
 <Project>
   <!-- Single source of truth for the application version (app assemblies + installer). -->
   <PropertyGroup>
-    <Version>1.0.0</Version>
-    <FileVersion>1.0.0.0</FileVersion>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <Version>1.0.1</Version>
+    <FileVersion>1.0.1.0</FileVersion>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
     <Product>Qwen Code Manager</Product>
     <Company>Qwen Code Manager</Company>
     <Authors>Qwen Code Manager</Authors>
